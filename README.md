@@ -13,7 +13,7 @@
 |------|-----|
 | Rodrigo Fernandes Serafim | RM550816 |
 | João Antonio Rihan | RM99656 |
-|  |  |
+| Letícia Resina | RM98069 |
 
 
 ## 📝 Descrição do Projeto
