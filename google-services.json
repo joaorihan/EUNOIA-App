@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "171065544185",
+    "project_id": "eunoia-app-c9ab6",
+    "storage_bucket": "eunoia-app-c9ab6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171065544185:android:793e47aefb7f8e235d4128",
+        "android_client_info": {
+          "package_name": "com.joaorihan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVSqkZhxv5F1HiwWxYAmTcuRc1W2JJLGc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
