@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import auth from '@react-native-firebase/auth';
 import { LoginScreen } from '../screens/LoginScreen';
 import { CadastroScreen } from '../screens/CadastroScreen';
 import { MainTabsNavigator } from './MainTabsNavigator';
@@ -17,7 +16,7 @@ export const RootNavigator = () => {
 
   useEffect(() => {
     // Observer do estado de autenticação
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = auth().onAuthStateChanged((user) => {
       setIsAuthenticated(!!user);
       setLoading(false);
     });
