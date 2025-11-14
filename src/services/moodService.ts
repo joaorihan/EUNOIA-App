@@ -1,25 +1,16 @@
-import { 
-  collection, 
-  addDoc, 
-  query, 
-  where, 
-  orderBy, 
-  getDocs,
-  doc,
-  updateDoc,
-  Timestamp 
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
+import firestore from '@react-native-firebase/firestore';
 import { MoodData, AIAnalysis } from '../types';
 
 export const moodService = {
   // Salvar check-in diário
   async saveCheckIn(moodData: MoodData): Promise<string> {
     try {
-      const docRef = await addDoc(collection(db, 'moods'), {
-        ...moodData,
-        date: Timestamp.fromDate(moodData.date)
-      });
+      const docRef = await firestore()
+        .collection('moods')
+        .add({
+          ...moodData,
+          date: firestore.Timestamp.fromDate(moodData.date)
+        });
       return docRef.id;
     } catch (error: any) {
       throw new Error(error.message || 'Erro ao salvar check-in');
@@ -29,13 +20,16 @@ export const moodService = {
   // Buscar histórico de check-ins do usuário
   async getUserMoods(userId: string, limit?: number): Promise<MoodData[]> {
     try {
-      const q = query(
-        collection(db, 'moods'),
-        where('userId', '==', userId),
-        orderBy('date', 'desc')
-      );
+      let query = firestore()
+        .collection('moods')
+        .where('userId', '==', userId)
+        .orderBy('date', 'desc');
 
-      const querySnapshot = await getDocs(q);
+      if (limit) {
+        query = query.limit(limit);
+      }
+
+      const querySnapshot = await query.get();
       const moods: MoodData[] = [];
 
       querySnapshot.forEach((doc) => {
@@ -46,7 +40,7 @@ export const moodService = {
         } as MoodData);
       });
 
-      return limit ? moods.slice(0, limit) : moods;
+      return moods;
     } catch (error: any) {
       console.error('Erro ao buscar histórico:', error);
       return [];
@@ -59,14 +53,12 @@ export const moodService = {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const q = query(
-        collection(db, 'moods'),
-        where('userId', '==', userId),
-        where('date', '>=', Timestamp.fromDate(sevenDaysAgo)),
-        orderBy('date', 'desc')
-      );
-
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await firestore()
+        .collection('moods')
+        .where('userId', '==', userId)
+        .where('date', '>=', firestore.Timestamp.fromDate(sevenDaysAgo))
+        .orderBy('date', 'desc')
+        .get();
       
       if (querySnapshot.empty) {
         return 'Sem dados suficientes';
@@ -137,13 +129,14 @@ export const moodService = {
   // Atualizar streak do usuário
   async updateUserStreak(userId: string, streak: number): Promise<void> {
     try {
-      await updateDoc(doc(db, 'users', userId), {
-        currentStreak: streak
-      });
+      await firestore()
+        .collection('users')
+        .doc(userId)
+        .update({
+          currentStreak: streak
+        });
     } catch (error: any) {
       console.error('Erro ao atualizar streak:', error);
     }
   }
 };
-
-

@@ -1,18 +1,12 @@
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  signOut,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 import { User } from '../types';
 
 export const authService = {
-  // Registrar novo usuá˜rio
+  // Registrar novo usuário
   async register(email: string, password: string, name: string): Promise<User> {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
       const firebaseUser = userCredential.user;
 
       // Criar documento do usuário no Firestore
@@ -24,7 +18,10 @@ export const authService = {
         createdAt: new Date()
       };
 
-      await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      await firestore()
+        .collection('users')
+        .doc(firebaseUser.uid)
+        .set(userData);
 
       return userData;
     } catch (error: any) {
@@ -35,11 +32,14 @@ export const authService = {
   // Login
   async login(email: string, password: string): Promise<User> {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await auth().signInWithEmailAndPassword(email, password);
       const firebaseUser = userCredential.user;
 
       // Buscar dados do usuário no Firestore
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      const userDoc = await firestore()
+        .collection('users')
+        .doc(firebaseUser.uid)
+        .get();
       
       if (userDoc.exists()) {
         return userDoc.data() as User;
@@ -54,21 +54,25 @@ export const authService = {
   // Logout
   async logout(): Promise<void> {
     try {
-      await signOut(auth);
+      await auth().signOut();
     } catch (error: any) {
       throw new Error(error.message || 'Erro ao sair');
     }
   },
 
   // Obter usuário atual
-  getCurrentUser(): FirebaseUser | null {
-    return auth.currentUser;
+  getCurrentUser() {
+    return auth().currentUser;
   },
 
   // Buscar dados do usuário do Firestore
   async getUserData(userId: string): Promise<User | null> {
     try {
-      const userDoc = await getDoc(doc(db, 'users', userId));
+      const userDoc = await firestore()
+        .collection('users')
+        .doc(userId)
+        .get();
+        
       if (userDoc.exists()) {
         return userDoc.data() as User;
       }
@@ -79,5 +83,3 @@ export const authService = {
     }
   }
 };
-
-
