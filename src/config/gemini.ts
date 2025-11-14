@@ -1,30 +1,39 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import Constants from 'expo-constants';
 
-// Configuração do Google Gemini AI
-// Para obter sua API Key: https://makersuite.google.com/app/apikey
+// Configuração do Google Gemini AI (Nova API)
+// Para obter sua API Key: https://aistudio.google.com/app/apikey
 
 // Lê da configuração do Expo (app.config.js)
 const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey || '';
 
-// Inicializa o cliente Gemini
-let genAI: GoogleGenerativeAI | null = null;
-
-if (GEMINI_API_KEY) {
-  genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Debug: Mostra informações sobre a API key (sem expor a chave completa)
+if (__DEV__) {
+  if (GEMINI_API_KEY) {
+    console.log('🔑 Gemini API Key detectada:', GEMINI_API_KEY.substring(0, 10) + '...');
+  } else {
+    console.log('⚠️ Gemini API Key não configurada');
+  }
 }
 
-// Exporta a instância do modelo
-export const getGeminiModel = () => {
-  if (!genAI) {
-    return null;
+// Inicializa o cliente Gemini (Nova API)
+let ai: GoogleGenAI | null = null;
+
+if (GEMINI_API_KEY) {
+  try {
+    ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+    console.log('✅ Google Gemini AI inicializado com sucesso (Nova API)');
+  } catch (error) {
+    console.error('❌ Erro ao inicializar Google Gemini AI:', error);
   }
-  // Usando gemini-1.5-flash (gratuito e rápido)
-  // Alternativa: 'gemini-1.5-pro' (mais poderoso, mas pode ter limites)
-  return genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+}
+
+// Exporta a instância do cliente
+export const getGeminiClient = () => {
+  return ai;
 };
 
 export const isGeminiConfigured = () => {
-  return !!GEMINI_API_KEY && !!genAI;
+  return !!GEMINI_API_KEY && !!ai;
 };
 

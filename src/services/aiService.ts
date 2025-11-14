@@ -18,7 +18,7 @@ export const aiService = {
     // Tenta usar Gemini se configurado
     if (isGeminiConfigured()) {
       try {
-        console.log('🤖 Usando Google Gemini Pro para análise...');
+        console.log('🤖 Tentando usar Google Gemini Pro para análise...');
         const geminiResult = await geminiAIService.fetchGeminiAnalysis(
           moodData,
           facialData
@@ -28,8 +28,15 @@ export const aiService = {
           console.log('✅ Análise do Gemini gerada com sucesso');
           return geminiResult;
         }
-      } catch (error) {
-        console.warn('⚠️ Erro no Gemini, usando simulação:', error);
+        
+        console.log('ℹ️ Gemini retornou null, usando simulação local');
+      } catch (error: any) {
+        console.log('ℹ️ Gemini não disponível, usando simulação local');
+        console.log('💡 Dica: Verifique sua API key ou use o app sem Gemini');
+        // Não mostra o erro completo para o usuário, apenas para debug
+        if (__DEV__) {
+          console.debug('Detalhes do erro Gemini:', error?.message);
+        }
       }
     } else {
       console.log('ℹ️ Gemini não configurado, usando simulação local');

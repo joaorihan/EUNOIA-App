@@ -1,13 +1,13 @@
 import { AIAnalysis, MoodData } from '../types';
-import { getGeminiModel, isGeminiConfigured } from '../config/gemini';
+import { getGeminiClient, isGeminiConfigured } from '../config/gemini';
 
 /**
- * Serviço de IA usando Google Gemini Pro
+ * Serviço de IA usando Google Gemini (Nova API)
  * Gera análises personalizadas baseadas no estado emocional do usuário
  */
 export const geminiAIService = {
   /**
-   * Gera análise usando Google Gemini Pro
+   * Gera análise usando Google Gemini (Nova API)
    */
   async fetchGeminiAnalysis(
     moodData: Partial<MoodData>,
@@ -19,28 +19,80 @@ export const geminiAIService = {
       return null;
     }
 
-    try {
-      const model = getGeminiModel();
-      if (!model) {
-        return null;
-      }
-
-      // Constrói o prompt contextualizado
-      const prompt = this.buildPrompt(moodData, facialData);
-
-      // Chama o Gemini
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-
-      // Parse da resposta (esperamos JSON)
-      const analysis = this.parseGeminiResponse(text);
-      
-      return analysis;
-    } catch (error) {
-      console.error('Erro ao chamar Gemini:', error);
+    const ai = getGeminiClient();
+    if (!ai) {
+      console.log('❌ Cliente Gemini não inicializado');
       return null;
     }
+
+    console.log('🔍 Testando modelos Gemini disponíveis (Nova API)...');
+    
+    // Lista de modelos a tentar (ordem de mais provável para menos provável)
+    const modelsToTry = [
+      'gemini-2.5-flash',
+      'gemini-2.5-pro',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-pro',
+      'gemini-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-pro-latest'
+    ];
+
+    // Constrói o prompt contextualizado uma vez
+    const prompt = this.buildPrompt(moodData, facialData);
+
+    // Tenta cada modelo até encontrar um que funcione
+    let lastError = '';
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const modelName = modelsToTry[i];
+      try {
+        console.log(`🔄 [${i + 1}/${modelsToTry.length}] Tentando modelo: ${modelName}`);
+        
+        // Chama o Gemini usando a Nova API
+        console.log(`📤 Enviando requisição para ${modelName}...`);
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+        });
+
+        const text = response.text;
+        console.log(`📥 Resposta recebida (${text.length} caracteres)`);
+
+        // Parse da resposta (esperamos JSON)
+        const analysis = this.parseGeminiResponse(text);
+        
+        console.log(`✅ SUCESSO! Modelo ${modelName} funcionou!`);
+        console.log(`💡 Use este modelo: ${modelName}`);
+        return analysis;
+      } catch (error: any) {
+        const errorMsg = error?.message || String(error);
+        lastError = errorMsg.split('\n')[0];
+        console.log(`❌ [${i + 1}/${modelsToTry.length}] ${modelName}: ${lastError}`);
+        // Continua para o próximo modelo
+        continue;
+      }
+    }
+
+    // Se nenhum modelo funcionou
+    console.log('');
+    console.log('⚠️ ════════════════════════════════════════════════════');
+    console.log('⚠️  Nenhum modelo Gemini disponível');
+    console.log('⚠️ ════════════════════════════════════════════════════');
+    console.log('💡 Possíveis causas:');
+    console.log('   1. API key inválida ou expirada');
+    console.log('   2. API key sem permissões para esses modelos');
+    console.log('   3. Problemas de conectividade');
+    console.log('');
+    console.log('🔧 Para resolver:');
+    console.log('   1. Verifique se sua API key está correta no .env');
+    console.log('   2. Acesse: https://aistudio.google.com/app/apikey');
+    console.log('   3. Crie uma nova API key se necessário');
+    console.log('');
+    console.log('📱 O app continuará funcionando com IA simulada');
+    console.log('⚠️ ════════════════════════════════════════════════════');
+    console.log('');
+    return null;
   },
 
   /**
