@@ -5,14 +5,38 @@ export const moodService = {
   // Salvar check-in diário
   async saveCheckIn(moodData: MoodData): Promise<string> {
     try {
+      console.log('💾 [moodService] Preparando dados para salvar...');
+      
+      // Constrói o objeto manualmente (sem spread operator)
+      const dataToSave = {
+        userId: moodData.userId,
+        date: firestore.Timestamp.fromDate(moodData.date),
+        humor: moodData.humor,
+        energia: moodData.energia,
+        sono: moodData.sono,
+        justificativa: moodData.justificativa || '',
+        fotoStatus: moodData.fotoStatus,
+        // Serializa a análise como strings simples
+        analiseTexto: moodData.analise?.analise || '',
+        sugestoes: moodData.analise?.sugestoes || []
+      };
+      
+      console.log('💾 [moodService] Dados preparados:', {
+        userId: dataToSave.userId,
+        humor: dataToSave.humor,
+        analiseSize: dataToSave.analiseTexto.length,
+        sugestoesCount: dataToSave.sugestoes.length
+      });
+      
+      console.log('💾 [moodService] Iniciando firestore().collection().add()...');
       const docRef = await firestore()
         .collection('moods')
-        .add({
-          ...moodData,
-          date: firestore.Timestamp.fromDate(moodData.date)
-        });
+        .add(dataToSave);
+      
+      console.log('💾 [moodService] Documento salvo com ID:', docRef.id);
       return docRef.id;
     } catch (error: any) {
+      console.error('💾 [moodService] Erro ao salvar:', error);
       throw new Error(error.message || 'Erro ao salvar check-in');
     }
   },

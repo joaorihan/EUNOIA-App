@@ -55,7 +55,6 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
       if (!currentUser) {
         console.error('Usuário não autenticado');
         alert('Erro: Usuário não autenticado. Faça login novamente.');
-        setLoading(false);
         return;
       }
 
@@ -68,10 +67,15 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
       );
 
       console.log('✅ Análise concluída:', aiAnalysis);
-      console.log('💾 Salvando check-in no Firestore...');
+      
+      // ESTRATÉGIA: Navegar PRIMEIRO, salvar DEPOIS (melhor UX)
+      console.log('📍 Navegando para tela de análise...');
+      navigation.navigate('Analise', { analise: aiAnalysis });
+      console.log('✅ Navegação concluída (com foto)!');
 
-      // Salvar check-in no Firestore
-      await moodService.saveCheckIn({
+      // Salvar no Firestore em background (não bloqueia o fluxo)
+      console.log('💾 Salvando check-in no Firestore (background)...');
+      moodService.saveCheckIn({
         userId: currentUser.uid,
         date: new Date(),
         humor: checkInData.humor,
@@ -80,16 +84,19 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
         justificativa: checkInData.justificativa || '',
         fotoStatus: 'Capturada',
         analise: aiAnalysis
-      });
-
-      console.log('✅ Check-in salvo com sucesso!');
-      console.log('📍 Navegando para tela de análise...');
-
-      // Navegar para tela de análise
-      navigation.navigate('Analise', { analise: aiAnalysis });
+      })
+        .then((docId) => {
+          console.log('✅ Check-in salvo com sucesso! ID:', docId);
+        })
+        .catch((error) => {
+          console.error('⚠️ Erro ao salvar check-in (não crítico):', error);
+        });
     } catch (error: any) {
-      console.error('❌ Erro ao processar check-in:', error);
+      console.error('❌ Erro ao processar check-in (com foto):', error);
       alert(`Erro: ${error?.message || 'Não foi possível processar o check-in'}`);
+    } finally {
+      // Garante que o loading sempre para, mesmo com erro
+      console.log('🔄 Parando loading (com foto)...');
       setLoading(false);
     }
   };
@@ -102,7 +109,6 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
       if (!currentUser) {
         console.error('Usuário não autenticado');
         alert('Erro: Usuário não autenticado. Faça login novamente.');
-        setLoading(false);
         return;
       }
 
@@ -115,10 +121,15 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
       );
 
       console.log('✅ Análise concluída:', aiAnalysis);
-      console.log('💾 Salvando check-in no Firestore...');
+      
+      // ESTRATÉGIA: Navegar PRIMEIRO, salvar DEPOIS (melhor UX)
+      console.log('📍 Navegando para tela de análise...');
+      navigation.navigate('Analise', { analise: aiAnalysis });
+      console.log('✅ Navegação concluída (sem foto)!');
 
-      // Salvar check-in no Firestore
-      await moodService.saveCheckIn({
+      // Salvar no Firestore em background (não bloqueia o fluxo)
+      console.log('💾 Salvando check-in no Firestore (background)...');
+      moodService.saveCheckIn({
         userId: currentUser.uid,
         date: new Date(),
         humor: checkInData.humor,
@@ -127,16 +138,19 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
         justificativa: checkInData.justificativa || '',
         fotoStatus: 'Não capturada',
         analise: aiAnalysis
-      });
-
-      console.log('✅ Check-in salvo com sucesso!');
-      console.log('📍 Navegando para tela de análise...');
-
-      // Navegar para tela de análise
-      navigation.navigate('Analise', { analise: aiAnalysis });
+      })
+        .then((docId) => {
+          console.log('✅ Check-in salvo com sucesso! ID:', docId);
+        })
+        .catch((error) => {
+          console.error('⚠️ Erro ao salvar check-in (não crítico):', error);
+        });
     } catch (error: any) {
-      console.error('❌ Erro ao processar check-in:', error);
+      console.error('❌ Erro ao processar check-in (sem foto):', error);
       alert(`Erro: ${error?.message || 'Não foi possível processar o check-in'}`);
+    } finally {
+      // Garante que o loading sempre para, mesmo com erro
+      console.log('🔄 Parando loading (sem foto)...');
       setLoading(false);
     }
   };
