@@ -1,9 +1,48 @@
 import { AIAnalysis, MoodData } from '../types';
+import { geminiAIService } from './aiService.gemini';
+import { isGeminiConfigured } from '../config/gemini';
 
-// Simulação de chamada de API de IA
+/**
+ * Serviço de IA principal
+ * Tenta usar Gemini primeiro, fallback para simulação local
+ */
 export const aiService = {
-  // Simula a análise da IA com base nos dados do humor
+  /**
+   * Analisa o estado emocional e retorna sugestões personalizadas
+   * Usa Google Gemini Pro se configurado, senão usa simulação local
+   */
   async fetchAIAnalysis(
+    moodData: Partial<MoodData>,
+    facialData: string
+  ): Promise<AIAnalysis> {
+    // Tenta usar Gemini se configurado
+    if (isGeminiConfigured()) {
+      try {
+        console.log('🤖 Usando Google Gemini Pro para análise...');
+        const geminiResult = await geminiAIService.fetchGeminiAnalysis(
+          moodData,
+          facialData
+        );
+        
+        if (geminiResult) {
+          console.log('✅ Análise do Gemini gerada com sucesso');
+          return geminiResult;
+        }
+      } catch (error) {
+        console.warn('⚠️ Erro no Gemini, usando simulação:', error);
+      }
+    } else {
+      console.log('ℹ️ Gemini não configurado, usando simulação local');
+    }
+
+    // Fallback: Simulação local
+    return await this.fetchSimulatedAnalysis(moodData, facialData);
+  },
+
+  /**
+   * Simulação local de IA (fallback)
+   */
+  async fetchSimulatedAnalysis(
     moodData: Partial<MoodData>,
     facialData: string
   ): Promise<AIAnalysis> {
