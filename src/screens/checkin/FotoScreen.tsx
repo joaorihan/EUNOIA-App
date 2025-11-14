@@ -53,14 +53,22 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
     try {
       const currentUser = authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error('Usuário não autenticado');
+        console.error('Usuário não autenticado');
+        alert('Erro: Usuário não autenticado. Faça login novamente.');
+        setLoading(false);
+        return;
       }
 
+      console.log('🔄 Iniciando análise da IA...');
+      
       // Simular análise da IA
       const aiAnalysis = await aiService.fetchAIAnalysis(
         checkInData,
         'foto_simulada'
       );
+
+      console.log('✅ Análise concluída:', aiAnalysis);
+      console.log('💾 Salvando check-in no Firestore...');
 
       // Salvar check-in no Firestore
       await moodService.saveCheckIn({
@@ -74,11 +82,14 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
         analise: aiAnalysis
       });
 
+      console.log('✅ Check-in salvo com sucesso!');
+      console.log('📍 Navegando para tela de análise...');
+
       // Navegar para tela de análise
       navigation.navigate('Analise', { analise: aiAnalysis });
-    } catch (error) {
-      console.error('Erro ao processar check-in:', error);
-    } finally {
+    } catch (error: any) {
+      console.error('❌ Erro ao processar check-in:', error);
+      alert(`Erro: ${error?.message || 'Não foi possível processar o check-in'}`);
       setLoading(false);
     }
   };
@@ -89,14 +100,22 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
     try {
       const currentUser = authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error('Usuário não autenticado');
+        console.error('Usuário não autenticado');
+        alert('Erro: Usuário não autenticado. Faça login novamente.');
+        setLoading(false);
+        return;
       }
+
+      console.log('🔄 Iniciando análise da IA (sem foto)...');
 
       // Simular análise da IA sem foto
       const aiAnalysis = await aiService.fetchAIAnalysis(
         checkInData,
         'sem_foto'
       );
+
+      console.log('✅ Análise concluída:', aiAnalysis);
+      console.log('💾 Salvando check-in no Firestore...');
 
       // Salvar check-in no Firestore
       await moodService.saveCheckIn({
@@ -110,11 +129,14 @@ export const FotoScreen: React.FC<Props> = ({ navigation, route }) => {
         analise: aiAnalysis
       });
 
+      console.log('✅ Check-in salvo com sucesso!');
+      console.log('📍 Navegando para tela de análise...');
+
       // Navegar para tela de análise
       navigation.navigate('Analise', { analise: aiAnalysis });
-    } catch (error) {
-      console.error('Erro ao processar check-in:', error);
-    } finally {
+    } catch (error: any) {
+      console.error('❌ Erro ao processar check-in:', error);
+      alert(`Erro: ${error?.message || 'Não foi possível processar o check-in'}`);
       setLoading(false);
     }
   };
