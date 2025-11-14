@@ -1,3 +1,6 @@
+// Load .env if exists
+require('dotenv').config({ silent: true });
+
 export default {
   expo: {
     name: "EUNOIA",

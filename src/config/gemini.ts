@@ -1,12 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import Constants from 'expo-constants';
-import { GEMINI_API_KEY as ENV_GEMINI_KEY } from '@env';
 
 // Configuração do Google Gemini AI
 // Para obter sua API Key: https://makersuite.google.com/app/apikey
 
-// Prioriza .env, depois app.config.js
-const GEMINI_API_KEY = ENV_GEMINI_KEY || Constants.expoConfig?.extra?.geminiApiKey || '';
+// Lê da configuração do Expo (app.config.js)
+const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey || '';
 
 // Inicializa o cliente Gemini
 let genAI: GoogleGenerativeAI | null = null;
